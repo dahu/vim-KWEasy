@@ -3,6 +3,10 @@ Vim-Kweasy
 
 __Makes you kweasy, or your money back!__
 
+TIP: If you like Vim-KWEasy and want to share the W00t!, I'm grateful for
+https://www.gittip.com/bairuidahu/[tips] or
+http://of-vim-and-vigor.blogspot.com/[beverages].
+
 Vim-KWEasy lets you jump to the very character you've got your eyeballs on!
 Just look at the screen and take a note of the character you want to land on
 and then press <leader>k followed by that character!

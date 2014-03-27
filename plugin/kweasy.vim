@@ -39,10 +39,13 @@ endif
 let s:index = map(range(48,48+9) +  range(97,97+25) + range(65,65+25) +
       \ range(33,47) + range(58,64) + range(123,126),
       \ 'nr2char(v:val)')
+let s:len = len(s:index)
 
 " Public Interface: {{{1
 function! KWEasy(char)
   let char = nr2char(a:char)
+  let save_list = &list
+  set nolist
   let top_of_window = line('w0')
   let bot_of_window = line('w$')
   let lines = getline('w0', 'w$')
@@ -53,8 +56,10 @@ function! KWEasy(char)
   let counter = Series()
   let newlines = []
   for l in lines
-    while l =~ char
-      let l = substitute(l, char, s:index[counter.next()%len(s:index)], '')
+    let ms = match(l, char)
+    while ms != -1
+      let l = substitute(l, char, s:index[counter.next() % s:len], '')
+      let ms = match(l, char, ms + 1)
     endwhile
     call add(newlines, l)
   endfor
@@ -66,11 +71,11 @@ function! KWEasy(char)
   redraw
   let jump = nr2char(getchar())
   let pos = stridx(join(newlines, ' '), jump)
-  echo pos
   bwipe
   exe "normal! " . top_of_window . 'zt0'
   let curpos = getpos('.')
   call search('\%#\_.\{' . (pos+1) . '}', 'ceW')
+  let &list = save_list
 endfunction
 
 " Maps: {{{1
