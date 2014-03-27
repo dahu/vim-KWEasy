@@ -49,9 +49,6 @@ function! KWEasy(char)
   let top_of_window = line('w0')
   let bot_of_window = line('w$')
   let lines = getline('w0', 'w$')
-  if len(lines) > (bot_of_window - top_of_window - 1)
-    call remove(lines, -1)
-  endif
   call map(lines, 'substitute(v:val, "[^" . char . "]", " ", "g")')
   let counter = Series()
   let newlines = []
@@ -68,7 +65,10 @@ function! KWEasy(char)
   setlocal bufhidden=hide
   setlocal noswapfile
   call append(0, newlines)
+  $
+  delete
   redraw
+  1
   let jump = nr2char(getchar())
   let pos = stridx(join(newlines, ' '), jump)
   bwipe
