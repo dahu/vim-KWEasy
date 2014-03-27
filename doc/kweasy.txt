@@ -1,0 +1,25 @@
+*kweasy.txt*	Quickly and easily jump to positions on screen
+
+
+			VIM REFERENCE MANUAL	by Barry Arthur
+
+
+Help on using kweasy                                                    *kweasy*
+
+1. Introduction				|kweasy-intro|
+
+==============================================================================
+1. INTRODUCTION                                             *kweasy-intro*
+
+Vim-KWEasy lets you jump to the very character you've got your eyeballs on!
+Just look at the screen and take a note of the character you want to land on
+and then press <leader>k followed by that character!
+
+You can change the default map (<leader>k) with a line like this in your ~/.vimrc:
+>
+  nmap <leader>q <Plug>KweasyJump
+<
+
+
+Template From: https://github.com/dahu/Area-41/
+ vim:tw=78:ts=8:ft=help:norl:

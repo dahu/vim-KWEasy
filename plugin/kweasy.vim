@@ -1,0 +1,88 @@
+" Vim global plugin for quickly and easily jumping to positions on screen
+" Maintainer:	Barry Arthur <barry.arthur@gmail.com>
+" Version:	0.1
+" Description:	Jump to the character you're looking at!
+" Last Change:	2014-03-27
+" License:	Vim License (see :help license)
+" Location:	plugin/kweasy.vim
+" Website:	https://github.com/dahu/kweasy
+"
+" See kweasy.txt for help.  This can be accessed by doing:
+"
+" :helptags ~/.vim/doc
+" :help kweasy
+
+" Vimscript Setup: {{{1
+" Allow use of line continuation.
+let s:save_cpo = &cpo
+set cpo&vim
+
+" load guard
+" uncomment after plugin development.
+" XXX The conditions are only as examples of how to use them. Change them as
+" needed. XXX
+"if exists("g:loaded_kweasy")
+"      \ || v:version < 700
+"      \ || v:version == 703 && !has('patch338')
+"      \ || &compatible
+"  let &cpo = s:save_cpo
+"  finish
+"endif
+"let g:loaded_kweasy = 1
+
+" Options: {{{1
+if !exists('g:kweasy_some_plugin_option')
+  let g:kweasy_some_plugin_option = 0
+endif
+
+" Private Functions: {{{1
+let s:index = map(range(48,48+9) +  range(97,97+25) + range(65,65+25) +
+      \ range(33,47) + range(58,64) + range(123,126),
+      \ 'nr2char(v:val)')
+
+" Public Interface: {{{1
+function! KWEasy(char)
+  let char = nr2char(a:char)
+  let top_of_window = line('w0')
+  let bot_of_window = line('w$')
+  let lines = getline('w0', 'w$')
+  if len(lines) > (bot_of_window - top_of_window - 1)
+    call remove(lines, -1)
+  endif
+  call map(lines, 'substitute(v:val, "[^" . char . "]", " ", "g")')
+  let counter = Series()
+  let newlines = []
+  for l in lines
+    while l =~ char
+      let l = substitute(l, char, s:index[counter.next()%len(s:index)], '')
+    endwhile
+    call add(newlines, l)
+  endfor
+  enew
+  setlocal buftype=nofile
+  setlocal bufhidden=hide
+  setlocal noswapfile
+  call append(0, newlines)
+  redraw
+  let jump = nr2char(getchar())
+  let pos = stridx(join(newlines, ' '), jump)
+  echo pos
+  bwipe
+  exe "normal! " . top_of_window . 'zt0'
+  let curpos = getpos('.')
+  call search('\%#\_.\{' . (pos+1) . '}', 'ceW')
+endfunction
+
+" Maps: {{{1
+nnoremap <Plug>KweasyJump :call KWEasy(getchar())<cr>
+
+if !hasmapto('<Plug>KweasyJump')
+  nmap <unique><silent> <leader>k <Plug>KweasyJump
+endif
+
+" Teardown:{{{1
+"reset &cpo back to users setting
+let &cpo = s:save_cpo
+
+" Template From: https://github.com/dahu/Area-41/
+" vim: set sw=2 sts=2 et fdm=marker:

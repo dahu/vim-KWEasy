@@ -1,0 +1,13 @@
+Vim-Kweasy
+----------
+
+__Makes you kweasy, or your money back!__
+
+Vim-KWEasy lets you jump to the very character you've got your eyeballs on!
+Just look at the screen and take a note of the character you want to land on
+and then press <leader>k followed by that character!
+
+Known Issues
+~~~~~~~~~~~~
+
+* `<tabs>` cause offset errors
