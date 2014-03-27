@@ -7,7 +7,16 @@ Vim-KWEasy lets you jump to the very character you've got your eyeballs on!
 Just look at the screen and take a note of the character you want to land on
 and then press <leader>k followed by that character!
 
+Dependencies
+~~~~~~~~~~~~
+
+Vim-KWEasy depends on https://github.com/dahu/Nexus[Nexus]
+
 Known Issues
 ~~~~~~~~~~~~
 
 * `<tabs>` cause offset errors
+
+* The display chars are limited in size and get re-used if the search char
+  appears more times than this size limit. The jump will land on the first
+  occuurrence on screen of the chosen character.
