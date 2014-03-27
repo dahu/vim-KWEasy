@@ -49,7 +49,7 @@ function! KWEasy(char)
   let top_of_window = line('w0')
   let bot_of_window = line('w$')
   let lines = getline('w0', 'w$')
-  call map(lines, 'substitute(v:val, "[^" . char . "]", " ", "g")')
+  call map(lines, 'substitute(v:val, "[^\\t" . char . "]", " ", "g")')
   let counter = Series()
   let newlines = []
   for l in lines
