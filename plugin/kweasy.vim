@@ -78,6 +78,7 @@ function! s:with_jump_marks(lines, pattern)
 endfunction
 
 function! s:jump_marks_overlay(lines)
+  let prior_buffer = bufnr('#')
   noautocmd enew
   setlocal buftype=nofile
   setlocal bufhidden=hide
@@ -88,7 +89,12 @@ function! s:jump_marks_overlay(lines)
   redraw
   1
   let jump = nr2char(getchar())
-  bwipe
+  buffer #
+  bwipe #
+  if prior_buffer != -1
+    exe 'buffer ' . prior_buffer
+    buffer #
+  end
   return jump
 endfunction
 
