@@ -12,6 +12,8 @@
 " :helptags ~/.vim/doc
 " :help kweasy
 
+let g:kweasy_version = '0.1'
+
 " Vimscript Setup: {{{1
 " Allow use of line continuation.
 let s:save_cpo = &cpo
@@ -38,24 +40,20 @@ if !exists('g:nexus_version')
   finish
 endif
 
-" Options: {{{1
-if !exists('g:kweasy_some_plugin_option')
-  let g:kweasy_some_plugin_option = 0
-endif
-
 " Private Functions: {{{1
+
 let s:index = map(range(48,48+9) +  range(97,97+25) + range(65,65+25) +
       \ range(33,47) + range(58,64) + range(123,126),
       \ 'nr2char(v:val)')
 let s:len = len(s:index)
 
 " Public Interface: {{{1
+
 function! KWEasy(char)
-  let char = escape(nr2char(a:char), '^$.*~')
+  let char = escape(nr2char(a:char), '^$.*~][')
   let save_list = &list
   set nolist
   let top_of_window = line('w0')
-  let bot_of_window = line('w$')
   let lines = getline('w0', 'w$')
   call map(lines, 'substitute(v:val, "[^\\t" . char . "]", " ", "g")')
   let counter = Series()
@@ -69,6 +67,7 @@ function! KWEasy(char)
     call add(newlines, l)
   endfor
   enew
+  syntax off
   setlocal buftype=nofile
   setlocal bufhidden=hide
   setlocal noswapfile
@@ -78,8 +77,9 @@ function! KWEasy(char)
   redraw
   1
   let jump = nr2char(getchar())
-  let pos = stridx(join(newlines, ' '), jump)
   bwipe
+  syntax on
+  let pos = stridx(join(newlines, ' '), jump)
   exe "normal! " . top_of_window . 'zt0'
   let curpos = getpos('.')
   call search('\%#\_.\{' . (pos+1) . '}', 'ceW')
