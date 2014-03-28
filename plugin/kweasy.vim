@@ -50,13 +50,13 @@ let s:len = len(s:index)
 " Public Interface: {{{1
 
 function! KWEasy(char)
-  let char = escape(nr2char(a:char), '^$.*~][\\')
+  let char = escape(nr2char(a:char), '^$.*~]\\')
   let save_list = &list
   let save_syntax = g:syntax_on
   set nolist
   let top_of_window = line('w0')
   let lines = getline('w0', 'w$')
-  call map(lines, 'substitute(v:val, "[^\\t" . char . "]", " ", "g")')
+  call map(lines, 'substitute(v:val, "\\m[^\\t" . char . "]", " ", "g")')
   let counter = Series()
   let newlines = []
   for l in lines
@@ -85,7 +85,7 @@ function! KWEasy(char)
   let pos = stridx(join(newlines, ' '), jump)
   exe "normal! " . top_of_window . 'zt0'
   let curpos = getpos('.')
-  call search('\%#\_.\{' . (pos+1) . '}', 'ceW')
+  call search('\m\%#\_.\{' . (pos+1) . '}', 'ceW')
   let &list = save_list
 endfunction
 
