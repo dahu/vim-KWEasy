@@ -1,7 +1,7 @@
 " Vim global plugin for quickly and easily jumping to positions on screen
 " Maintainer:	Barry Arthur <barry.arthur@gmail.com>
-" Version:	0.1
-" Description:	Jump to the character you're looking at!
+" Version:	0.2
+" Description:	Jump to the object you're looking at!
 " Last Change:	2014-03-27
 " License:	Vim License (see :help license)
 " Location:	plugin/kweasy.vim
@@ -12,7 +12,7 @@
 " :helptags ~/.vim/doc
 " :help kweasy
 
-let g:kweasy_version = '0.1'
+let g:kweasy_version = '0.2'
 
 " Vimscript Setup: {{{1
 " Allow use of line continuation.
@@ -32,7 +32,7 @@ set cpo&vim
 "endif
 "let g:loaded_kweasy = 1
 
-" Test for Nexus (used for the Series() number generator)
+ " Test for Nexus (used for the Series() number generator)
 if !exists('g:nexus_version')
   echohl Warn
   echom "vim-KWEasy depends on https://github.com/dahu/Nexus"
@@ -55,12 +55,22 @@ let s:len = len(s:index)
 
 " Public Interface: {{{1
 
-function! KWEasy(char)
+function! KWEasyJump(char)
   let char = escape(nr2char(a:char), '^$.*~]\\')
-  let mask = ' '
-  if char == ' '
-    let mask = '_'
-  endif
+  call histadd('input', char)
+  return KWEasySearch(char)
+endfunction
+
+function! FindMask(str)
+  return ' '
+endfunction
+
+function! KWEasySearch(pattern)
+  let pattern = a:pattern
+  " let mask = ' '
+  " if pattern == ' ' || pattern == "\t"
+  "   let mask = '_'
+  " endif
   " let save_syntax = g:syntax_on
   if g:kweasy_nolist
     let save_list = &list
@@ -68,16 +78,34 @@ function! KWEasy(char)
   endif
   let top_of_window = line('w0')
   let lines = getline('w0', 'w$')
-  call map(lines, 'substitute(v:val, "\\m[^\\t\\n " . char . "]", mask, "g")')
+  " call map(lines, 'substitute(v:val, "\\%(\\t\\|\\%(" . pattern . "\\)\\)\\@!.", mask, "g")')
+  " call map(lines, 'substitute(v:val, "\\%(" . pattern . "\\)\\@!.", mask, "g")')
+  " call map(lines, 'substitute(v:val, "[^\\t ]", "x", "g")')
   let counter = Series()
   let newlines = []
+  "TODO: find a better mask (scan string)
+  let mask = 'ñ'
+  let fill = ' '
+  if pattern == ' '
+    let fill = 'x'
+  endif
   for l in lines
-    let ms = match(l, char)
+    let ms = match(l, pattern)
+    let me = matchend(l, pattern)
     while ms != -1
-      let l = substitute(l, char, s:index[counter.next() % s:len], '')
-      let ms = match(l, char, ms + 1)
+      let l = substitute(l, pattern, mask . repeat(fill, (me-ms-1)), '')
+      let ms = match(l, pattern, me)
+      let me = matchend(l, pattern, ms)
     endwhile
-    call add(newlines, substitute(l, mask, ' ', 'g'))
+
+    let l = substitute(l, '[^' . mask . ']', ' ', 'g')
+
+    let ms = match(l, mask)
+    while ms != -1
+      let l = substitute(l, mask, s:index[counter.next() % s:len], '')
+      let ms = match(l, mask, ms + 1)
+    endwhile
+    call add(newlines, l)
   endfor
   noautocmd enew
   " syntax off
@@ -104,10 +132,23 @@ function! KWEasy(char)
 endfunction
 
 " Maps: {{{1
-nnoremap <Plug>KweasyJump :call KWEasy(getchar())<cr>
+" nnoremap <Plug>KweasyJump :call KWEasy(getchar())<cr>
+nnoremap <Plug>KweasyJump :call KWEasyJump(getchar())<cr>
 
 if !hasmapto('<Plug>KweasyJump')
   nmap <unique><silent> <leader>k <Plug>KweasyJump
+endif
+
+nnoremap <Plug>KweasySearch :call KWEasySearch(input('/'))<cr>
+
+if !hasmapto('<Plug>KweasySearch')
+  nmap <unique><silent> <leader>s <Plug>KweasySearch
+endif
+
+nmap <plug>KweasyAgain <plug>KweasySearch<up><cr>
+
+if !hasmapto('<Plug>KweasyAgain')
+  nmap <unique><silent> <leader>n <Plug>KweasyAgain
 endif
 
 " Teardown:{{{1
