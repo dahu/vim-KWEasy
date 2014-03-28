@@ -50,7 +50,7 @@ let s:len = len(s:index)
 " Public Interface: {{{1
 
 function! KWEasy(char)
-  let char = escape(nr2char(a:char), '^$.*~][')
+  let char = escape(nr2char(a:char), '^$.*~][\\')
   let save_list = &list
   let save_syntax = g:syntax_on
   set nolist
