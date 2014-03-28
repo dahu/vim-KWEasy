@@ -67,6 +67,9 @@ endfunction
 
 function! KWEasySearch(pattern)
   let pattern = a:pattern
+  if pattern == "\<esc>" || pattern == ''
+    return
+  endif
   " let mask = ' '
   " if pattern == ' ' || pattern == "\t"
   "   let mask = '_'
@@ -122,9 +125,11 @@ function! KWEasySearch(pattern)
   " if save_syntax
   "   syntax enable
   " endif
+  if jump == "\<esc>"
+    return
+  endif
   let pos = stridx(join(newlines, ' '), jump)
   exe "normal! " . top_of_window . 'zt0'
-  let curpos = getpos('.')
   call search('\m\%#\_.\{' . (pos+1) . '}', 'ceW')
   if g:kweasy_nolist
     let &list = save_list
