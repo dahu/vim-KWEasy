@@ -46,5 +46,20 @@ You can change the default map (<leader>k) with a line like this in your
   nmap <leader>q <Plug>KweasyJump
 <
 
+------------------------------------------------------------------------------
+                                                         *'kweasy_nolist'*
+                                                       *'g:kweasy_nolist'*
+Values: boolean
+Default: 0                                                                   ~
+
+By default, vim-KWEasy doesn't disable the |'list'| option when displaying the
+jump marks because doing so can cause slight offset glitches.
+
+Make vim-KWEasy disable |'list'| by adding the following line to your $MYVIMRC:
+>
+  let g:kweasy_nolist = 1
+<
+
+
 Template From: https://github.com/dahu/Area-41/
  vim:tw=78:ts=8:ft=help:norl:

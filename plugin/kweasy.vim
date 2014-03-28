@@ -40,6 +40,12 @@ if !exists('g:nexus_version')
   finish
 endif
 
+" Plugin Options : {{{1
+
+if !exists('g:kweasy_nolist')
+  let g:kweasy_nolist = 0
+endif
+
 " Private Functions: {{{1
 
 let s:index = map(range(48,48+9) +  range(97,97+25) + range(65,65+25) +
@@ -51,12 +57,18 @@ let s:len = len(s:index)
 
 function! KWEasy(char)
   let char = escape(nr2char(a:char), '^$.*~]\\')
-  let save_list = &list
-  let save_syntax = g:syntax_on
-  set nolist
+  let mask = ' '
+  if char == ' '
+    let mask = '_'
+  endif
+  " let save_syntax = g:syntax_on
+  if g:kweasy_nolist
+    let save_list = &list
+    set nolist
+  endif
   let top_of_window = line('w0')
   let lines = getline('w0', 'w$')
-  call map(lines, 'substitute(v:val, "\\m[^\\t" . char . "]", " ", "g")')
+  call map(lines, 'substitute(v:val, "\\m[^\\t\\n " . char . "]", mask, "g")')
   let counter = Series()
   let newlines = []
   for l in lines
@@ -65,10 +77,10 @@ function! KWEasy(char)
       let l = substitute(l, char, s:index[counter.next() % s:len], '')
       let ms = match(l, char, ms + 1)
     endwhile
-    call add(newlines, l)
+    call add(newlines, substitute(l, mask, ' ', 'g'))
   endfor
-  enew
-  syntax off
+  noautocmd enew
+  " syntax off
   setlocal buftype=nofile
   setlocal bufhidden=hide
   setlocal noswapfile
@@ -79,14 +91,16 @@ function! KWEasy(char)
   1
   let jump = nr2char(getchar())
   bwipe
-  if save_syntax
-    syntax enable
-  endif
+  " if save_syntax
+  "   syntax enable
+  " endif
   let pos = stridx(join(newlines, ' '), jump)
   exe "normal! " . top_of_window . 'zt0'
   let curpos = getpos('.')
   call search('\m\%#\_.\{' . (pos+1) . '}', 'ceW')
-  let &list = save_list
+  if g:kweasy_nolist
+    let &list = save_list
+  endif
 endfunction
 
 " Maps: {{{1
