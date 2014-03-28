@@ -30,6 +30,14 @@ set cpo&vim
 "endif
 "let g:loaded_kweasy = 1
 
+" Test for Nexus (used for the Series() number generator)
+if !exists('g:nexus_version')
+  echohl Warn
+  echom "vim-KWEasy depends on https://github.com/dahu/Nexus"
+  echohl none
+  finish
+endif
+
 " Options: {{{1
 if !exists('g:kweasy_some_plugin_option')
   let g:kweasy_some_plugin_option = 0
