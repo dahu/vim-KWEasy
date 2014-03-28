@@ -32,14 +32,6 @@ set cpo&vim
 "endif
 "let g:loaded_kweasy = 1
 
- " Test for Nexus (used for the Series() number generator)
-if !exists('g:nexus_version')
-  echohl Warn
-  echom "vim-KWEasy depends on https://github.com/dahu/Nexus"
-  echohl none
-  finish
-endif
-
 " Plugin Options : {{{1
 
 if !exists('g:kweasy_nolist')
@@ -122,15 +114,32 @@ function! s:show_jump_marks_for(pattern)
   call search('\m\%#\_.\{' . (pos+1) . '}', 'ceW')
 endfunction
 
+function! s:check_dependencies()
+  " Nexus is used for the Series() number generator
+  if !exists('g:nexus_version')
+    echohl Warn
+    echom "vim-KWEasy depends on https://github.com/dahu/Nexus"
+    echohl none
+    return 0
+  endif
+  return 1
+endfunction
+
 " Public Interface: {{{1
 
 function! KWEasyJump(char)
+  if !s:check_dependencies()
+    return
+  endif
   let char = escape(nr2char(a:char), '^$.*~]\\')
   call histadd('input', char)
   return KWEasySearch(char)
 endfunction
 
 function! KWEasySearch(pattern)
+  if !s:check_dependencies()
+    return
+  endif
   let pattern = a:pattern
 
   if pattern == "\<esc>" || pattern == ''
@@ -151,19 +160,19 @@ endfunction
 
 " Maps: {{{1
 " nnoremap <Plug>KweasyJump :call KWEasy(getchar())<cr>
-nnoremap <Plug>KweasyJump :call KWEasyJump(getchar())<cr>
+nnoremap <silent> <Plug>KweasyJump :call KWEasyJump(getchar())<cr>
 
 if !hasmapto('<Plug>KweasyJump')
   nmap <unique><silent> <leader>k <Plug>KweasyJump
 endif
 
-nnoremap <Plug>KweasySearch :call KWEasySearch(input('/'))<cr>
+nnoremap <silent> <Plug>KweasySearch :call KWEasySearch(input('/'))<cr>
 
 if !hasmapto('<Plug>KweasySearch')
   nmap <unique><silent> <leader>s <Plug>KweasySearch
 endif
 
-nmap <plug>KweasyAgain <plug>KweasySearch<up><cr>
+nmap <silent> <plug>KweasyAgain <plug>KweasySearch<up><cr>
 
 if !hasmapto('<Plug>KweasyAgain')
   nmap <unique><silent> <leader>n <Plug>KweasyAgain
