@@ -53,46 +53,16 @@ let s:index = map(range(48,48+9) +  range(97,97+25) + range(65,65+25) +
       \ 'nr2char(v:val)')
 let s:len = len(s:index)
 
-" Public Interface: {{{1
-
-function! KWEasyJump(char)
-  let char = escape(nr2char(a:char), '^$.*~]\\')
-  call histadd('input', char)
-  return KWEasySearch(char)
-endfunction
-
-function! FindMask(str)
-  return ' '
-endfunction
-
-function! KWEasySearch(pattern)
+function! s:with_jump_marks(lines, pattern)
+  let lines = a:lines
   let pattern = a:pattern
-  if pattern == "\<esc>" || pattern == ''
-    return
-  endif
-  " let mask = ' '
-  " if pattern == ' ' || pattern == "\t"
-  "   let mask = '_'
-  " endif
-  " let save_syntax = g:syntax_on
-  if g:kweasy_nolist
-    let save_list = &list
-    set nolist
-  endif
-  let top_of_window = line('w0')
-  let lines = getline('w0', 'w$')
-  " call map(lines, 'substitute(v:val, "\\%(\\t\\|\\%(" . pattern . "\\)\\)\\@!.", mask, "g")')
-  " call map(lines, 'substitute(v:val, "\\%(" . pattern . "\\)\\@!.", mask, "g")')
-  " call map(lines, 'substitute(v:val, "[^\\t ]", "x", "g")')
   let counter = Series()
   let newlines = []
-  "TODO: find a better mask (scan string)
-  let mask = 'ñ'
-  let fill = ' '
-  if pattern == ' '
-    let fill = 'x'
-  endif
+  let mask = "\n"
+  let fill = pattern == ' ' ? "\r" : ' '
+
   for l in lines
+    " mark the start of matches with the 'mask' and erasing with 'fill'
     let ms = match(l, pattern)
     let me = matchend(l, pattern)
     while ms != -1
@@ -101,8 +71,10 @@ function! KWEasySearch(pattern)
       let me = matchend(l, pattern, ms)
     endwhile
 
+    " clear anything that isn't the 'mask'
     let l = substitute(l, '[^' . mask . ']', ' ', 'g')
 
+    " replace 'mask's with jump-mark
     let ms = match(l, mask)
     while ms != -1
       let l = substitute(l, mask, s:index[counter.next() % s:len], '')
@@ -110,27 +82,68 @@ function! KWEasySearch(pattern)
     endwhile
     call add(newlines, l)
   endfor
+  return newlines
+endfunction
+
+function! s:jump_marks_overlay(lines)
   noautocmd enew
-  " syntax off
   setlocal buftype=nofile
   setlocal bufhidden=hide
   setlocal noswapfile
-  call append(0, newlines)
+  call append(0, a:lines)
   $
   delete
   redraw
   1
   let jump = nr2char(getchar())
   bwipe
-  " if save_syntax
-  "   syntax enable
-  " endif
+  return jump
+endfunction
+
+function! s:show_jump_marks_for(pattern)
+  let lines = s:with_jump_marks(getline('w0', 'w$'), a:pattern)
+  let top_of_window = line('w0')
+  let jump = s:jump_marks_overlay(lines)
+
+  exe "normal! " . top_of_window . 'zt0'
+
   if jump == "\<esc>"
+    normal! ``
     return
   endif
-  let pos = stridx(join(newlines, ' '), jump)
-  exe "normal! " . top_of_window . 'zt0'
+
+  let pos = stridx(join(lines, ' '), jump)
+
+  if pos == -1
+    normal! ``
+    return
+  endif
+
   call search('\m\%#\_.\{' . (pos+1) . '}', 'ceW')
+endfunction
+
+" Public Interface: {{{1
+
+function! KWEasyJump(char)
+  let char = escape(nr2char(a:char), '^$.*~]\\')
+  call histadd('input', char)
+  return KWEasySearch(char)
+endfunction
+
+function! KWEasySearch(pattern)
+  let pattern = a:pattern
+
+  if pattern == "\<esc>" || pattern == ''
+    return
+  endif
+
+  if g:kweasy_nolist
+    let save_list = &list
+    set nolist
+  endif
+
+  call s:show_jump_marks_for(pattern)
+
   if g:kweasy_nolist
     let &list = save_list
   endif

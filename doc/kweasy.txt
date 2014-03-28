@@ -22,6 +22,11 @@ replaced by, say, the number 3 or the letter a, or the symbol :.  Whatever it
 is, press it now and your original buffer contents reappears and your cursor
 is moved to that location.
 
+Regular Expression Searches with KWEasy~
+
+If you'd rather show the jump-marks for a full-blown regex, use <leader>s
+instead.
+
 Rationale~
 
 Vim has a lot of ways to move the cursor. For long-distance jumps, that
