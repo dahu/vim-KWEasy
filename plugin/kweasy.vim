@@ -52,6 +52,7 @@ let s:len = len(s:index)
 function! KWEasy(char)
   let char = escape(nr2char(a:char), '^$.*~][')
   let save_list = &list
+  let save_syntax = g:syntax_on
   set nolist
   let top_of_window = line('w0')
   let lines = getline('w0', 'w$')
@@ -78,7 +79,9 @@ function! KWEasy(char)
   1
   let jump = nr2char(getchar())
   bwipe
-  syntax on
+  if save_syntax
+    syntax enable
+  endif
   let pos = stridx(join(newlines, ' '), jump)
   exe "normal! " . top_of_window . 'zt0'
   let curpos = getpos('.')
