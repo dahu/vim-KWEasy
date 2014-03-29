@@ -91,7 +91,7 @@ function! s:jump_marks_overlay(lines)
   let jump = nr2char(getchar())
   buffer #
   bwipe #
-  if prior_buffer != -1
+  if prior_buffer != -1 && buflisted(prior_buffer)
     exe 'buffer ' . prior_buffer
     buffer #
   end
