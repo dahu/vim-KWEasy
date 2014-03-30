@@ -78,7 +78,7 @@ function! s:with_jump_marks(lines, pattern)
 endfunction
 
 function! s:jump_marks_overlay(lines)
-  noautocmd enew
+  hide noautocmd enew
   setlocal buftype=nofile
   setlocal bufhidden=hide
   setlocal noswapfile
