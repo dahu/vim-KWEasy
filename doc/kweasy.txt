@@ -24,8 +24,7 @@ is moved to that location.
 
 Regular Expression Searches with KWEasy~
 
-If you'd rather show the jump-marks for a full-blown regex, use <leader>s
-instead.
+If you'd rather show the hints for a full-blown regex, use <leader>s instead.
 
 Rationale~
 
@@ -45,10 +44,16 @@ https://github.com/dahu/vim-fanfingtastic atop those keys.)
 
 2. CONFIGURATION                                        *kweasy-configuration*
 
-You can change the default map (<leader>k) with a line like this in your
-~/.vimrc:
+You can change the default KweasyJump map (<leader>k) with a line like this in
+your ~/.vimrc:
 >
-  nmap <leader>q <Plug>KweasyJump
+  nmap <leader>f <Plug>KweasyJump
+<
+
+You can change the default KweasySearch map (<leader>s) with a line like this
+in your ~/.vimrc:
+>
+  nmap <leader>F <Plug>KweasySearch
 <
 
 ------------------------------------------------------------------------------
@@ -57,12 +62,29 @@ You can change the default map (<leader>k) with a line like this in your
 Values: boolean
 Default: 0                                                                   ~
 
-By default, vim-KWEasy doesn't disable the |'list'| option when displaying the
-jump marks because doing so can cause slight offset glitches.
+By default, vim-KWEasy doesn't disable the |'list'| option when displaying
+hints because doing so can cause slight offset glitches.
 
 Make vim-KWEasy disable |'list'| by adding the following line to your $MYVIMRC:
 >
   let g:kweasy_nolist = 1
+<
+
+------------------------------------------------------------------------------
+                                                          *'kweasy_hints'*
+                                                        *'g:kweasy_hints'*
+Values: string
+Default: asdfg;lkjh
+
+Vim-KWEasy uses 88 keyboard characters as the on-screen hints for where to
+jump (previously referred to as "jump-marks"). By default, these hints are the
+set: [a-z,A-Z,0-9,punctuation] with the letters "asdfg;lkjh" moved to the
+front. Change the value of 'g:kweasy_hints' to alter which hints get displayed
+first.
+
+Make vim-KWEasy show digits first by adding the following line to your $MYVIMRC:
+>
+  let g:kweasy_hints = '0123456789'
 <
 
 

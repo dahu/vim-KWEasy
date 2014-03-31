@@ -38,11 +38,26 @@ if !exists('g:kweasy_nolist')
   let g:kweasy_nolist = 0
 endif
 
+if !exists('g:kweasy_hints')
+  let g:kweasy_hints = 'asdfg;lkjh'
+endif
+
 " Private Functions: {{{1
 
-let s:index = map(range(48,48+9) +  range(97,97+25) + range(65,65+25) +
+
+
+" a-z A-Z 0-9 punct
+let s:index = map(range(97,97+25) + range(65,65+25) +range(48,48+9) +
       \ range(33,47) + range(58,64) + range(123,126),
       \ 'nr2char(v:val)')
+
+let s:index = split(kweasy_hints, '\zs')
+      \     + split(substitute(tr(join(s:index, ''),
+      \                           kweasy_hints,
+      \                           repeat(' ', len(kweasy_hints))),
+      \                        ' ', '', 'g'),
+      \             '\zs')
+
 let s:len = len(s:index)
 
 function! s:with_jump_marks(lines, pattern)
