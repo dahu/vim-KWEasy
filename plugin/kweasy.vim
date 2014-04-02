@@ -78,21 +78,27 @@ function! s:with_jump_marks(lines, pattern)
       let me = matchend(l, pattern, ms)
     endwhile
 
-    " clear anything that isn't the 'mask'
-    let l = substitute(l, '[^' . mask . ']', ' ', 'g')
+    " clear anything that isn't the 'mask' (or tabs to keep alignment)
+    let l = substitute(l, '[^\t' . mask . ']', ' ', 'g')
 
     " replace 'mask's with jump-mark
     let ms = match(l, mask)
     while ms != -1
-      let l = substitute(l, mask, s:index[counter.next() % s:len], '')
+      let c = counter.next()
+      if c >= s:len
+        break
+      endif
+      let l = substitute(l, mask, s:index[c], '')
       let ms = match(l, mask, ms + 1)
     endwhile
+    let l = substitute(l, mask, ' ', 'g')
     call add(newlines, l)
   endfor
   return newlines
 endfunction
 
 function! s:jump_marks_overlay(lines)
+  let altbuf = bufnr('#')
   hide noautocmd enew
   setlocal buftype=nofile
   setlocal bufhidden=hide
@@ -105,6 +111,10 @@ function! s:jump_marks_overlay(lines)
   let jump = nr2char(getchar())
   buffer #
   bwipe #
+  if buflisted(altbuf)
+    exe 'buffer ' . altbuf
+    buffer #
+  endif
   return jump
 endfunction
 
@@ -147,7 +157,7 @@ function! KWEasyJump(char)
   if !s:check_dependencies()
     return
   endif
-  let char = escape(nr2char(a:char), '^$.*~]\\')
+  let char = '\C' . escape(nr2char(a:char), '^$.*~]\\')
   call histadd('input', char)
   return KWEasySearch(char)
 endfunction
