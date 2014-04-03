@@ -1,6 +1,6 @@
 " Vim global plugin for quickly and easily jumping to positions on screen
 " Maintainer:	Barry Arthur <barry.arthur@gmail.com>
-" Version:	0.2
+" Version:	0.3
 " Description:	Jump to the object you're looking at!
 " Last Change:	2014-03-27
 " License:	Vim License (see :help license)
@@ -12,7 +12,7 @@
 " :helptags ~/.vim/doc
 " :help kweasy
 
-let g:kweasy_version = '0.2'
+let g:kweasy_version = '0.3'
 
 " Vimscript Setup: {{{1
 " Allow use of line continuation.
@@ -44,13 +44,12 @@ endif
 
 " Private Functions: {{{1
 
-
-
 " a-z A-Z 0-9 punct
 let s:index = map(range(97,97+25) + range(65,65+25) +range(48,48+9) +
       \ range(33,47) + range(58,64) + range(123,126),
       \ 'nr2char(v:val)')
 
+" move g:kweasy_hints to the beginning (filtering them out of s:index)
 let s:index = split(kweasy_hints, '\zs')
       \     + split(substitute(tr(join(s:index, ''),
       \                           kweasy_hints,
@@ -73,13 +72,21 @@ function! s:with_jump_marks(lines, pattern)
     let ms = match(l, pattern)
     let me = matchend(l, pattern)
     while ms != -1
-      let l = substitute(l, pattern, mask . repeat(fill, (me-ms-1)), '')
+      " the following 5 lines compensate for Vim counting bytes instead of
+      " chars in functions like match() and len()
+      let fill_len = len(substitute(matchstr(l, pattern), '.', 'x', 'g'))
+      if (me-ms) == fill_len
+        let fill_len -= 1
+      endif
+      let me = ms + fill_len
+      let l = substitute(l, pattern, mask . repeat(fill, fill_len), '')
       let ms = match(l, pattern, me)
       let me = matchend(l, pattern, ms)
     endwhile
 
-    " clear anything that isn't the 'mask' (or tabs to keep alignment)
-    let l = substitute(l, '[^\t' . mask . ']', ' ', 'g')
+    " clear stuff that isn't the 'mask' (or tabs to keep alignment)
+    let l = substitute(l, '[^\t' . mask . ']',
+          \ '\=repeat(" ", len(submatch(0)) == 1 ? 1 : 2)', 'g')
 
     " replace 'mask's with jump-mark
     let ms = match(l, mask)
@@ -88,9 +95,11 @@ function! s:with_jump_marks(lines, pattern)
       if c >= s:len
         break
       endif
-      let l = substitute(l, mask, s:index[c], '')
+      let l = substitute(l, '\m' . mask, escape(s:index[c], '&~'), '')
       let ms = match(l, mask, ms + 1)
     endwhile
+    " we'd only have residual mask chars if there were too many to replace
+    " with jump hints; erase these unreachable extras
     let l = substitute(l, mask, ' ', 'g')
     call add(newlines, l)
   endfor
@@ -99,6 +108,8 @@ endfunction
 
 function! s:jump_marks_overlay(lines)
   let altbuf = bufnr('#')
+  let cur_pos = getpos('.')
+  syntax off
   hide noautocmd enew
   setlocal buftype=nofile
   setlocal bufhidden=hide
@@ -108,36 +119,37 @@ function! s:jump_marks_overlay(lines)
   delete
   redraw
   1
-  let jump = nr2char(getchar())
+
+  let jump = escape(nr2char(getchar()), '^$.*~]\\')
+  if jump == "\<esc>"
+    let jump_pos = cur_pos
+  elseif search(jump, 'cW') == 0
+    let jump_pos = cur_pos
+  else
+    let jump_pos = getpos('.')
+    " fix offset if there are tabs before jump target
+    let jump_pos[2] = virtcol('.')
+  endif
+
   buffer #
   bwipe #
   if buflisted(altbuf)
     exe 'buffer ' . altbuf
     buffer #
   endif
-  return jump
+  syntax enable
+  return jump_pos
 endfunction
 
 function! s:show_jump_marks_for(pattern)
   let lines = s:with_jump_marks(getline('w0', 'w$'), a:pattern)
   let top_of_window = line('w0')
-  let jump = s:jump_marks_overlay(lines)
+  let jump_pos = s:jump_marks_overlay(lines)
 
-  exe "normal! " . top_of_window . 'zt0'
-
-  if jump == "\<esc>"
-    normal! ``
-    return
-  endif
-
-  let pos = stridx(join(lines, ' '), jump)
-
-  if pos == -1
-    normal! ``
-    return
-  endif
-
-  call search('\m\%#\_.\{' . (pos+1) . '}', 'ceW')
+  exe "normal! " . top_of_window . 'zt'
+  let jump_pos[1] += top_of_window - 1
+  call setpos('.', jump_pos)
+  exe 'normal! ' . jump_pos[2] . '|'
 endfunction
 
 function! s:check_dependencies()
@@ -158,6 +170,9 @@ function! KWEasyJump(char)
     return
   endif
   let char = '\C' . escape(nr2char(a:char), '^$.*~]\\')
+  if char == "\\C\<esc>" || char == "\\C\<cr>"
+    return
+  endif
   call histadd('input', char)
   return KWEasySearch(char)
 endfunction
@@ -168,7 +183,7 @@ function! KWEasySearch(pattern)
   endif
   let pattern = a:pattern
 
-  if pattern == "\<esc>" || pattern == ''
+  if pattern == "\<esc>" || pattern == "\<cr>" || pattern == ''
     return
   endif
 
