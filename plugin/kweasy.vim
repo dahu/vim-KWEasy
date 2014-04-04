@@ -59,6 +59,10 @@ let s:index = split(kweasy_hints, '\zs')
 
 let s:len = len(s:index)
 
+function! s:trim(str)
+  return substitute(a:str, '\s\+$', '', '')
+endfunction
+
 function! s:with_jump_marks(lines, pattern)
   let lines = a:lines
   let pattern = a:pattern
@@ -70,18 +74,13 @@ function! s:with_jump_marks(lines, pattern)
   for l in lines
     " mark the start of matches with the 'mask' and erasing with 'fill'
     let ms = match(l, pattern)
-    let me = matchend(l, pattern)
     while ms != -1
-      " the following 5 lines compensate for Vim counting bytes instead of
+      " the following line compensates for Vim counting bytes instead of
       " chars in functions like match() and len()
-      let fill_len = len(substitute(matchstr(l, pattern), '.', 'x', 'g'))
-      if (me-ms) == fill_len
-        let fill_len -= 1
-      endif
-      let me = ms + fill_len
+      let fill_len = len(substitute(matchstr(l, pattern), '.',
+          \ '\=repeat("x", len(submatch(0)) == 1 ? 1 : 2)', 'g')) - 1
       let l = substitute(l, pattern, mask . repeat(fill, fill_len), '')
-      let ms = match(l, pattern, me)
-      let me = matchend(l, pattern, ms)
+      let ms = match(l, pattern)
     endwhile
 
     " clear stuff that isn't the 'mask' (or tabs to keep alignment)
@@ -96,12 +95,14 @@ function! s:with_jump_marks(lines, pattern)
         break
       endif
       let l = substitute(l, '\m' . mask, escape(s:index[c], '&~'), '')
-      let ms = match(l, mask, ms + 1)
+      let ms = match(l, mask)
     endwhile
+
     " we'd only have residual mask chars if there were too many to replace
     " with jump hints; erase these unreachable extras
     let l = substitute(l, mask, ' ', 'g')
-    call add(newlines, l)
+
+    call add(newlines, s:trim(l))
   endfor
   return newlines
 endfunction
@@ -109,7 +110,6 @@ endfunction
 function! s:jump_marks_overlay(lines)
   let altbuf = bufnr('#')
   let cur_pos = getpos('.')
-  syntax off
   hide noautocmd enew
   setlocal buftype=nofile
   setlocal bufhidden=hide
@@ -137,7 +137,6 @@ function! s:jump_marks_overlay(lines)
     exe 'buffer ' . altbuf
     buffer #
   endif
-  syntax enable
   return jump_pos
 endfunction
 
