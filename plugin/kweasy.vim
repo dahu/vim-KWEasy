@@ -107,9 +107,9 @@ function! s:with_jump_marks(lines, pattern)
   return newlines
 endfunction
 
-function! s:jump_marks_overlay(lines)
+function! s:jump_marks_overlay(lines, cur_pos)
   let altbuf = bufnr('#')
-  let cur_pos = getpos('.')
+  let cur_pos = a:cur_pos
   hide noautocmd enew
   setlocal buftype=nofile
   setlocal bufhidden=hide
@@ -121,7 +121,7 @@ function! s:jump_marks_overlay(lines)
   1
 
   let jump = escape(nr2char(getchar()), '^$.*~]\\')
-  if jump == "\<esc>"
+  if jump == '' || jump == "\<esc>" || jump == "\<cr>"
     let jump_pos = cur_pos
   elseif search(jump, 'cW') == 0
     let jump_pos = cur_pos
@@ -143,12 +143,16 @@ endfunction
 function! s:show_jump_marks_for(pattern)
   let lines = s:with_jump_marks(getline('w0', 'w$'), a:pattern)
   let top_of_window = line('w0')
-  let jump_pos = s:jump_marks_overlay(lines)
+  let cur_pos = getpos('.')
+  let jump_pos = s:jump_marks_overlay(lines, cur_pos)
 
   exe "normal! " . top_of_window . 'zt'
-  let jump_pos[1] += top_of_window - 1
-  call setpos('.', jump_pos)
-  exe 'normal! ' . jump_pos[2] . '|'
+  call setpos('.', cur_pos)
+  if jump_pos != cur_pos
+    let jump_pos[1] += top_of_window - 1
+    call setpos('.', jump_pos)
+    exe 'normal! ' . jump_pos[2] . '|'
+  endif
 endfunction
 
 function! s:check_dependencies()
@@ -169,7 +173,7 @@ function! KWEasyJump(char)
     return
   endif
   let char = '\C' . escape(nr2char(a:char), '^$.*~]\\')
-  if char == "\\C\<esc>" || char == "\\C\<cr>"
+  if char == "\\C\<esc>" || char == "\\C\<cr>" || char == '\C'
     return
   endif
   call histadd('input', char)
