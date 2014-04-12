@@ -195,7 +195,12 @@ function! KWEasySearch(pattern)
     set nolist
   endif
 
+  let save_scrolloff = &so
+  set so=0
+
   call s:show_jump_marks_for(pattern)
+
+  let &so = save_scrolloff
 
   if g:kweasy_nolist
     let &list = save_list
