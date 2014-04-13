@@ -110,10 +110,14 @@ endfunction
 function! s:jump_marks_overlay(lines, cur_pos)
   let altbuf = bufnr('#')
   let cur_pos = a:cur_pos
+  normal! 0
+  let first_col = wincol()
+
   hide noautocmd enew
   setlocal buftype=nofile
   setlocal bufhidden=hide
   setlocal noswapfile
+  let &l:numberwidth = first_col - 1
   call append(0, a:lines)
   $
   delete
