@@ -120,7 +120,7 @@ function! s:jump_marks_overlay(lines, cur_pos)
   let &l:numberwidth = first_col - 1
   call append(0, a:lines)
   $
-  delete
+  delete _
   redraw
   1
 
