@@ -70,8 +70,13 @@ function! s:with_jump_marks(lines, pattern)
   let newlines = []
   let mask = "\n"
   let fill = pattern == ' ' ? "\r" : ' '
+  let lnum = line('w0')
 
   for l in lines
+    if foldclosed(lnum) > 0 && foldclosed(lnum) != lnum
+      let l = ''
+    endif
+
     " mark the start of matches with the 'mask' and erasing with 'fill'
     let ms = match(l, pattern)
     while ms != -1
@@ -103,6 +108,7 @@ function! s:with_jump_marks(lines, pattern)
     let l = substitute(l, mask, ' ', 'g')
 
     call add(newlines, s:trim(l))
+    let lnum += 1
   endfor
   return newlines
 endfunction
@@ -112,15 +118,20 @@ function! s:jump_marks_overlay(lines, cur_pos)
   let cur_pos = a:cur_pos
   normal! 0
   let first_col = wincol()
+  let folds = s:folded_lines()
 
   hide noautocmd enew
   setlocal buftype=nofile
   setlocal bufhidden=hide
   setlocal noswapfile
+  setlocal foldmethod=manual
   let &l:numberwidth = first_col - 1
   call append(0, a:lines)
   $
   delete _
+  for [start, end] in folds
+    exec start . ',' . end 'fold'
+  endfor
   redraw
   1
 
@@ -142,6 +153,24 @@ function! s:jump_marks_overlay(lines, cur_pos)
     buffer #
   endif
   return jump_pos
+endfunction
+
+function! s:folded_lines()
+  let folds = []
+  let top = line('w0')
+  let bot = line('w$')
+  let i = top
+
+  while i <= bot
+    let start = foldclosed(i)
+    if start > 0
+      let i = foldclosedend(i)
+      call add(folds, [start - top + 1, i - top + 1])
+    endif
+    let i += 1
+  endwhile
+
+  return folds
 endfunction
 
 function! s:show_jump_marks_for(pattern)
