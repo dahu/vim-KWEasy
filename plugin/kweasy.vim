@@ -119,6 +119,7 @@ function! s:jump_marks_overlay(lines, cur_pos)
   normal! 0
   let first_col = wincol()
   let folds = s:folded_lines()
+  let ts = &l:tabstop
 
   hide noautocmd enew
   setlocal buftype=nofile
@@ -126,6 +127,7 @@ function! s:jump_marks_overlay(lines, cur_pos)
   setlocal noswapfile
   setlocal foldmethod=manual
   let &l:numberwidth = first_col - 1
+  let &l:tabstop = ts
   call append(0, a:lines)
   $
   delete _
