@@ -151,7 +151,7 @@ function! s:jump_marks_overlay(lines, cur_pos)
   bwipe #
   if buflisted(altbuf)
     exe 'buffer ' . altbuf
-    buffer #
+    silent! buffer #
   endif
   return jump_pos
 endfunction
