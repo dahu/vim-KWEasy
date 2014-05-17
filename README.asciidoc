@@ -13,7 +13,7 @@ and then press <leader>k followed by that character!
 
 .Demo:
 
-image::https://dl.dropboxusercontent.com/u/34865/Gifs/Kweasy.gif[]
+image::https://cloud.githubusercontent.com/assets/1159146/3003929/783c3d3c-dd69-11e3-94b6-2bc6862c2bed.gif[]
 
 Dependencies
 ~~~~~~~~~~~~
