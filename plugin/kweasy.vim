@@ -2,7 +2,7 @@
 " Maintainer:	Barry Arthur <barry.arthur@gmail.com>
 " Version:	0.3
 " Description:	Jump to the object you're looking at!
-" Last Change:	2014-03-27
+" Last Change:	2014-08-11
 " License:	Vim License (see :help license)
 " Location:	plugin/kweasy.vim
 " Website:	https://github.com/dahu/kweasy
@@ -139,7 +139,7 @@ function! s:jump_marks_overlay(lines, cur_pos)
   let jump = escape(nr2char(getchar()), '^$.*~]\\')
   if jump == '' || jump == "\<esc>" || jump == "\<cr>"
     let jump_pos = cur_pos
-  elseif search(jump, 'cW') == 0
+  elseif search(jump . '\C', 'cW') == 0
     let jump_pos = cur_pos
   else
     let jump_pos = getpos('.')
