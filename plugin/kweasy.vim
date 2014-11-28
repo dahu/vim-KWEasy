@@ -85,17 +85,17 @@ function! s:with_jump_marks(lines, pattern)
     " mark the start of matches with the 'mask' and erasing with 'fill'
     let ms = match(l, pattern)
     while ms != -1
-      " the following line compensates for Vim counting bytes instead of
-      " chars in functions like match() and len()
+      " use strchars() instead of len() to account for multibyte (wide) chars
       let fill_len = len(substitute(matchstr(l, pattern), '.',
-          \ '\=repeat("x", len(submatch(0)) == 1 ? 1 : 2)', 'g')) - 1
+          \ '\=repeat("x", strchars(submatch(0)))', 'g')) - 1
+
       let l = substitute(l, pattern, mask . repeat(fill, fill_len), '')
       let ms = match(l, pattern)
     endwhile
 
     " clear stuff that isn't the 'mask' (or tabs to keep alignment)
     let l = substitute(l, '[^\t' . mask . ']',
-          \ '\=repeat(" ", len(submatch(0)) == 1 ? 1 : 2)', 'g')
+          \ '\=repeat(" ", strchars(submatch(0)))', 'g')
 
     " replace 'mask's with jump-mark
     let ms = match(l, mask)
