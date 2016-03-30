@@ -56,6 +56,13 @@ in your ~/.vimrc:
   nmap <leader>F <Plug>KweasySearch
 <
 
+Additionally you can use the KWEasySearchCmd() function as <expr> mapping in
+command mode to search with current content of commandline. Handy in
+combination with 'incsearch' option:
+>
+  cnoremap <silent> <expr> <C-G> KWEasySearchCmd()
+<
+
 ------------------------------------------------------------------------------
                                                          *'kweasy_nolist'*
                                                        *'g:kweasy_nolist'*
