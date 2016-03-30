@@ -223,6 +223,11 @@ function! KWEasySearch(pattern)
   endif
 endfunction
 
+function! KWEasySearchCmd()
+  let g:kweasy_cmdline = getcmdline()
+  return "\e:call KWEasySearch(g:kweasy_cmdline)\r"
+endfunction
+
 " Maps: {{{1
 " nnoremap <Plug>KweasyJump :call KWEasy(getchar())<cr>
 nnoremap <silent> <Plug>KweasyJump :call KWEasyJump(getchar())<cr>
